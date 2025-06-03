@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { CreditCard } from "lucide-react";
 import Header from "@/components/Header";
@@ -6,15 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import LoadingSpinner from "@/components/LoadingSpinner";
-
-interface OrderSummaryItem {
-  name: string;
-  quantity: number;
-  price: number;
-  image: string;
-}
+import { useStore } from "@/store/useStore";
 
 const Checkout = () => {
+  const { cartItems, cartTotal, completeOrder } = useStore();
   const [paymentMethod, setPaymentMethod] = useState("credit-card");
   const [processing, setProcessing] = useState(false);
   const [shippingInfo, setShippingInfo] = useState({
@@ -31,37 +27,19 @@ const Checkout = () => {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Mock order summary data
-  const orderItems: OrderSummaryItem[] = [
-    {
-      name: "Canasta Werregue Tradicional",
-      quantity: 2,
-      price: 290000,
-      image: "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?auto=format&fit=crop&w=100&q=80"
-    },
-    {
-      name: "Collar de Semillas Nativas",
-      quantity: 1,
-      price: 85000,
-      image: "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?auto=format&fit=crop&w=100&q=80"
-    }
-  ];
-
-  const subtotal = 375000;
+  const subtotal = cartTotal;
   const shipping = 0;
-  const taxes = 37500;
-  const total = 412500;
+  const taxes = Math.round(subtotal * 0.1);
+  const total = subtotal + shipping + taxes;
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    // Shipping validation
     if (!shippingInfo.fullName.trim()) newErrors.fullName = "El nombre completo es requerido";
     if (!shippingInfo.address.trim()) newErrors.address = "La dirección es requerida";
     if (!shippingInfo.city.trim()) newErrors.city = "La ciudad es requerida";
     if (!shippingInfo.postalCode.trim()) newErrors.postalCode = "El código postal es requerido";
 
-    // Credit card validation (if selected)
     if (paymentMethod === "credit-card") {
       if (!cardInfo.number.replace(/\s/g, "")) newErrors.cardNumber = "El número de tarjeta es requerido";
       if (!cardInfo.expiry.match(/^\d{2}\/\d{2}$/)) newErrors.expiry = "Formato inválido (MM/AA)";
@@ -73,14 +51,15 @@ const Checkout = () => {
   };
 
   const handlePlaceOrder = async () => {
-    if (!validateForm()) return;
+    if (!validateForm() || cartItems.length === 0) return;
 
     setProcessing(true);
     
-    // Simulate API call
     setTimeout(() => {
+      // Complete the order and clear the cart
+      completeOrder();
       setProcessing(false);
-      // Redirect to order confirmation
+      
       const orderId = Math.random().toString(36).substr(2, 9);
       window.location.href = `/order-confirmation?order_id=${orderId}`;
     }, 2000);
@@ -101,12 +80,30 @@ const Checkout = () => {
     }
   };
 
+  // Redirect if cart is empty
+  if (cartItems.length === 0) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Header />
+        <main className="container mx-auto px-4 py-8">
+          <div className="text-center">
+            <h1 className="text-3xl font-bold text-primary-text mb-4">Carrito Vacío</h1>
+            <p className="text-primary-secondary mb-8">No tienes productos en tu carrito para proceder al checkout.</p>
+            <Button asChild className="bg-action hover:bg-action/90">
+              <a href="/shop">Ir a la Tienda</a>
+            </Button>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
       
       <main className="container mx-auto px-4 py-8">
-        {/* Breadcrumbs */}
         <nav className="mb-8">
           <ol className="flex items-center space-x-2 text-sm text-primary-secondary">
             <li><a href="/cart" className="hover:text-primary-action">Carrito</a></li>
@@ -120,15 +117,12 @@ const Checkout = () => {
         </h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Checkout Form */}
+          {/* Shipping Information */}
           <div className="space-y-8">
-            {/* Shipping Information */}
             <div className="bg-white border border-secondary/20 rounded-xl p-6">
               <h2 className="text-2xl font-bold text-primary-text mb-6">
                 Información de Envío
               </h2>
-              
-              
               
               <div className="space-y-4">
                 <div>
@@ -230,7 +224,6 @@ const Checkout = () => {
                   <Label htmlFor="paypal" className="cursor-pointer">PayPal</Label>
                 </div>
 
-                {/* Credit Card Fields */}
                 {paymentMethod === "credit-card" && (
                   <div className="mt-6 space-y-4 border-t border-secondary/20 pt-6">
                     <div>
@@ -291,11 +284,8 @@ const Checkout = () => {
               Resumen del Pedido
             </h2>
 
-            
-            
-            {/* Order Items */}
             <div className="space-y-4 mb-6">
-              {orderItems.map((item, index) => (
+              {cartItems.map((item, index) => (
                 <div key={index} className="flex items-center space-x-4">
                   <img
                     src={item.image}
@@ -307,13 +297,12 @@ const Checkout = () => {
                     <p className="text-primary-secondary text-sm">Cantidad: {item.quantity}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-semibold">${item.price.toLocaleString()}</p>
+                    <p className="font-semibold">${item.total.toLocaleString()}</p>
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* Totals */}
             <div className="space-y-3 border-t border-secondary/30 pt-4">
               <div className="flex justify-between">
                 <span className="text-primary-secondary">Subtotal:</span>
