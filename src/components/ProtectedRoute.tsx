@@ -1,7 +1,7 @@
 
 import { ReactNode } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useStore } from '@/store/useStore';
+import { useAuth } from '@/store/useStore';
 import LoadingSpinner from './LoadingSpinner';
 
 interface ProtectedRouteProps {
@@ -15,7 +15,7 @@ const ProtectedRoute = ({
   requireAuth = true, 
   redirectTo = '/login' 
 }: ProtectedRouteProps) => {
-  const { isLoggedIn, isLoading } = useStore();
+  const { isLoggedIn, isLoading } = useAuth();
   const location = useLocation();
 
   if (isLoading) {

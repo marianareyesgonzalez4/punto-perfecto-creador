@@ -82,38 +82,130 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-primary-white text-primary-text;
+    margin: 0;
+    padding: 0;
+    font-family: 'Plus Jakarta Sans', 'Noto Sans', sans-serif;
   }
 
-  /* Asegurar que los botones sean siempre visibles */
-  button {
-    position: relative;
-    z-index: 1;
+  /* Eliminar overlay blancos problemáticos */
+  *::before,
+  *::after {
+    background: transparent !important;
   }
-  
-  /* Mejorar contraste de botones */
-  .bg-primary-action {
+
+  /* Asegurar visibilidad de elementos clave */
+  button, 
+  .btn,
+  [role="button"] {
+    position: relative;
+    z-index: 10;
+    color: inherit !important;
+    background-color: inherit !important;
+  }
+
+  /* Texto siempre visible */
+  p, span, h1, h2, h3, h4, h5, h6, a {
+    color: inherit !important;
+    position: relative;
+    z-index: 5;
+  }
+
+  /* Header y navegación siempre visibles */
+  header,
+  nav,
+  .navigation {
+    position: relative;
+    z-index: 50;
+    background-color: inherit !important;
+  }
+
+  /* Cards y contenido principal */
+  .card,
+  [class*="card"] {
+    position: relative;
+    z-index: 5;
+    background-color: white !important;
+  }
+
+  /* Mejorar contraste de botones de acción */
+  .bg-primary-action,
+  .bg-action {
     background-color: #e55d19 !important;
+    color: white !important;
     border-color: #e55d19 !important;
   }
   
-  .hover\:bg-primary-action\/90:hover {
+  .hover\:bg-primary-action\/90:hover,
+  .hover\:bg-action\/90:hover {
     background-color: rgba(229, 93, 25, 0.9) !important;
   }
   
-  .border-primary-action {
-    border-color: #e55d19 !important;
-  }
-  
-  .text-primary-action {
+  .text-primary-action,
+  .text-action {
     color: #e55d19 !important;
   }
 
-  /* Arreglar line-clamp que puede no estar disponible */
+  .text-primary-text {
+    color: #181311 !important;
+  }
+
+  .text-primary-secondary {
+    color: #886f63 !important;
+  }
+
+  .bg-primary-background {
+    background-color: #f4f2f0 !important;
+  }
+
+  .bg-primary-white {
+    background-color: #ffffff !important;
+  }
+
+  /* Eliminar overlays y gradients problemáticos */
+  .gradient-overlay,
+  [class*="gradient"] {
+    display: none !important;
+  }
+
+  /* Arreglar line-clamp */
   .line-clamp-3 {
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
+  }
+
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Mejorar navegación rápida */
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+
+  /* Solo mantener transiciones en hover */
+  button:hover,
+  a:hover,
+  .hover-transition:hover {
+    transition: all 0.15s ease !important;
+  }
+}
+
+/* Optimizaciones específicas para navegación rápida */
+@layer utilities {
+  .fast-nav {
+    transition: none !important;
+    animation: none !important;
+  }
+  
+  .instant-load {
+    will-change: auto;
+    transform: none;
   }
 }
